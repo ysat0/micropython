@@ -1,7 +1,7 @@
 include ../../py/mkenv.mk
 
 CROSS = 0
-
+TARGET = mpython
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
@@ -53,33 +53,24 @@ SRC_S = crt0.s
 OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 
 ifeq ($(CROSS), 1)
-all: $(BUILD)/firmware.bin
+all: $(BUILD)/$(TARGET).bin
 else
-all: $(BUILD)/firmware.elf
+all: $(BUILD)/$(TARGET).elf
 endif
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
 	$(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=none $< > $@
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/$(TARGET).elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(Q)$(OBJCOPY) -O binary -j .vector -j .text -j .data $^ $(BUILD)/firmware.bin
+$(BUILD)/$(TARGET).bin: $(BUILD)/$(TARGET).elf
+	$(Q)$(OBJCOPY) -O binary -j .vector -j .text -j .data $^ $@
 
-# Run emulation build on a POSIX system with suitable terminal settings
-run:
-	stty raw opost -echo
-	build/firmware.elf
-	@echo Resetting terminal...
-# This sleep is useful to spot segfaults
-	sleep 1
-	reset
-
-test: $(BUILD)/firmware.elf
-	$(Q)/bin/echo -e "print('hello world!', list(x+1 for x in range(10)), end='eol\\\\n')\\r\\n\\x04" | $(BUILD)/firmware.elf | tail -n2 | grep "^hello world! \\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\\]eol"
+$(BUILD)/$(TARGET).srec: $(BUILD)/$(TARGET).elf
+	$(Q)$(OBJCOPY) -O srec -j .vector -j .text -j .data $^ $@
 
 include $(TOP)/py/mkrules.mk

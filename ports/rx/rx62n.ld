@@ -5,8 +5,8 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0xfff80000, LENGTH = 0x00080000 - 0x80 /* 512 KiB */
-    VECTOR (r)      : ORIGIN = 0xffffff80, LENGTH = 0x00000080
+    FLASH (rx)      : ORIGIN = 0xfff80000, LENGTH = 0x00080000 - 0x4 /* 512 KiB */
+    VECTOR (r)      : ORIGIN = 0xfffffffc, LENGTH = 0x0000004
     RAM (xrw)       : ORIGIN = 0x00000000, LENGTH = 0x00018000 /* 96 KiB */
 }
 
@@ -20,9 +20,8 @@ SECTIONS
     .text :
     {
         . = ALIGN(4);
+	*(.text.startup)
 	*(P)
-        *(.text)          /* .text* sections (code) */
-        *(.text.*)          /* .text* sections (code) */
 	*(C)
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
 
@@ -44,7 +43,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
-        *(.data*)          /* .data* sections */
+        *(D*)          /* .data* sections */
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
@@ -55,7 +54,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _sbss = .;         /* define a global symbol at bss start; used by startup code */
-        *(.bss*)
+        *(B*)
         *(COMMON)
 
         . = ALIGN(4);

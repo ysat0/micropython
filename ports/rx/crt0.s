@@ -1,8 +1,6 @@
-	.section	".vector","ax"
 	.global	_start
-	.rept	31
-	.long	0xffffffff
-	.endr
+
+	.section	".vector","ax"
 	.long	_start
 
 	.text
