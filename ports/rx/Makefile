@@ -21,7 +21,6 @@ CFLAGS_RX = -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_RX) $(COPT)
 LIBC =  $(shell $(CROSS_COMPILE)gcc -print-file-name=libc.a)
 LDFLAGS = -T rx62n.ld -Map=$@.map -L $(dir $(LIBC))
-# --cref --gc-sections
 else
 CFLAGS = -m32 $(INC) -Wall -Werror -std=c99 $(COPT)
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
